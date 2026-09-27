@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanish | Developer & Maker</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        dark: '#0a0a0f',
+                        glass: 'rgba(255, 255, 255, 0.05)',
+                        neon: {
+                            cyan: '#00f3ff',
+                            purple: '#bc13fe'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0a0f;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Glowing Text Utilities */
+        .text-glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+        .text-glow-purple {
+            text-shadow: 0 0 10px rgba(188, 19, 254, 0.5), 0 0 20px rgba(188, 19, 254, 0.3);
+        }
+
+        /* 3D Tilt Card Base */
+        .tilt-card {
+            transition: transform 0.1s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        .tilt-card:hover {
+            box-shadow: 0 15px 35px rgba(0, 243, 255, 0.2);
+            border-color: rgba(0, 243, 255, 0.4);
+        }
+        .tilt-content {
+            transform: translateZ(30px); /* Pushes content out in 3D space */
+        }
+
+        /* Terminal Styles */
+        .terminal-container {
+            background: #11111b;
+            border: 1px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .terminal-output {
+            scrollbar-width: thin;
+            scrollbar-color: #333 #111;
+        }
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        .term-input-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00f3ff;
+            font-family: 'Fira Code', monospace;
+            flex-grow: 1;
+            caret-color: #00f3ff;
+        }
+
+        /* Typing Cursor Animation */
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Background Grid Pattern */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-neon-cyan selection:text-black">
+
+    <nav class="fixed w-full z-50 glass-panel border-b-0 border-white/10 top-0">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#home" class="text-2xl font-bold tracking-tighter text-white hover:text-neon-cyan transition-colors">
+                TANISH<span class="text-neon-purple">.</span>
+            </a>
+            <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide">
+                <a href="#home" class="hover:text-neon-cyan transition-colors">HOME</a>
+                <a href="#projects" class="hover:text-neon-purple transition-colors">PROJECTS</a>
+                <a href="#terminal" class="hover:text-neon-cyan transition-colors">TERMINAL</a>
+                <a href="#contact" class="hover:text-neon-purple transition-colors">CONTACT</a>
+            </div>
+            <a href="#contact" class="hidden md:block px-5 py-2 rounded-full bg-transparent border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black transition-all duration-300 font-semibold shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
+                Initialize <i class="fa-solid fa-bolt ml-1"></i>
+            </a>
+            <!-- Mobile Menu Icon -->
+            <button class="md:hidden text-gray-300 hover:text-white">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <section id="home" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <div class="absolute inset-0 bg-grid pointer-events-none z-0"></div>
+        
+        <!-- Glowing background blobs -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-purple/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+            <p class="text-neon-cyan font-mono mb-4 tracking-widest uppercase">System Online // Welcome</p>
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight">
+                Hi, I'm <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan to-neon-purple text-glow-cyan">Tanish</span>
+            </h1>
+            <div class="text-2xl md:text-4xl font-semibold text-gray-300 mb-8 h-12">
+                &gt; I build <span id="typed-text" class="text-white"></span><span class="cursor-blink text-neon-purple">_</span>
+            </div>
+            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+                A maker and developer bridging the gap between hardware and software. Specializing in cloud infrastructure, embedded systems, and robotics engineering.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#projects" class="px-8 py-4 rounded-lg bg-gradient-to-r from-neon-cyan to-blue-600 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(0,243,255,0.4)]">
+                    View Hardware & Code
+                </a>
+                <a href="#terminal" class="px-8 py-4 rounded-lg glass-panel border border-white/20 text-white font-bold text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-terminal"></i> Access Terminal
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="relative py-24 px-6 z-10">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold mb-16 text-center">
+                Featured <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan text-glow-purple">Deployments</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Project Card 1 -->
+                <div class="tilt-card glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-neon-cyan/10 rounded-full blur-[40px] group-hover:bg-neon-cyan/30 transition-colors"></div>
+                    <div class="tilt-content h-full flex flex-col">
+                        <div class="w-14 h-14 rounded-lg bg-black border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                            <i class="fa-solid fa-microchip text-2xl text-neon-cyan"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Custom Smart IoT Hub</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">Designed a custom PCB utilizing ESP32 microcontrollers to interface with home automation APIs and manage edge sensor networks.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-cyan-300">C++</span>
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-cyan-300">PCB Design</span>
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-cyan-300">MQTT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 -->
+                <div class="tilt-card glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-neon-purple/10 rounded-full blur-[40px] group-hover:bg-neon-purple/30 transition-colors"></div>
+                    <div class="tilt-content h-full flex flex-col">
+                        <div class="w-14 h-14 rounded-lg bg-black border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(188,19,254,0.2)]">
+                            <i class="fa-solid fa-robot text-2xl text-neon-purple"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Autonomous Rover</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">Programmed a wheeled robot featuring obstacle avoidance via LiDAR, servo-driven camera gimbals, and ROS (Robot Operating System) mapping.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-purple-300">Python</span>
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-purple-300">ROS</span>
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-purple-300">Hardware</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Card 3 -->
+                <div class="tilt-card glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] group-hover:bg-blue-500/30 transition-colors"></div>
+                    <div class="tilt-content h-full flex flex-col">
+                        <div class="w-14 h-14 rounded-lg bg-black border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                            <i class="fa-solid fa-cloud text-2xl text-blue-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Cloud AI Infrastructure</h3>
+                        <p class="text-gray-400 mb-6 flex-grow">Deployed scalable Linux virtual machines and Docker containers on cloud providers to run a self-hosted computer vision pipeline.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-blue-300">Docker</span>
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-blue-300">Azure / Linux</span>
+                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-blue-300">Node.js</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="terminal" class="py-24 px-6 relative">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-white mb-4"><i class="fa-solid fa-terminal mr-2 text-neon-cyan"></i> Interactive Shell</h2>
+                <p class="text-gray-400">Type <code class="bg-white/10 px-2 py-1 rounded text-neon-purple font-mono">help</code> to see available commands.</p>
+            </div>
+
+            <!-- Terminal Window -->
+            <div class="terminal-container rounded-xl overflow-hidden flex flex-col h-[400px]">
+                <!-- Mac-like Header -->
+                <div class="bg-[#1e1e2e] px-4 py-3 flex items-center gap-2 border-b border-white/10">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div class="flex-grow text-center text-xs text-gray-400 font-mono">tanish@portfolio:~</div>
+                </div>
+                <!-- Terminal Body -->
+                <div class="p-4 font-mono text-sm sm:text-base flex-grow overflow-y-auto terminal-output" id="term-output">
+                    <div class="text-gray-300 mb-2">Establishing secure connection... <span class="text-green-400">OK</span></div>
+                    <div class="text-gray-300 mb-4">Welcome to TanishOS v1.0.0.</div>
+                </div>
+                <!-- Input Line -->
+                <div class="bg-[#11111b] p-4 flex items-center font-mono term-input-wrapper border-t border-white/5">
+                    <span class="text-green-400 mr-2">tanish@maker:~$</span>
+                    <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus placeholder="Type a command...">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 px-6 relative z-10">
+        <div class="max-w-3xl mx-auto glass-panel p-8 md:p-12 rounded-2xl border border-white/10">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-2">Initiate <span class="text-neon-cyan">Handshake</span></h2>
+            <p class="text-center text-gray-400 mb-8">Ready to collaborate on hardware or cloud projects? Send a signal.</p>
+            
+            <form id="contact-form" class="space-y-6" onsubmit="event.preventDefault(); document.getElementById('contact-btn').innerText='Message Transmitted!'; setTimeout(()=>document.getElementById('contact-btn').innerText='Send Message', 3000); this.reset();">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2 font-mono">Your Name</label>
+                        <input type="text" required class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2 font-mono">Your Email</label>
+                        <input type="email" required class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2 font-mono">Transmission Data (Message)</label>
+                    <textarea rows="4" required class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all resize-none"></textarea>
+                </div>
+                <button type="submit" id="contact-btn" class="w-full py-4 rounded-lg bg-white text-black font-bold text-lg hover:bg-neon-cyan hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all duration-300">
+                    Send Message
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <footer class="border-t border-white/10 bg-dark py-8 text-center">
+        <div class="flex justify-center space-x-6 mb-4">
+            <a href="#" class="text-gray-400 hover:text-neon-cyan text-xl transition-colors"><i class="fa-brands fa-github"></i></a>
+            <a href="#" class="text-gray-400 hover:text-neon-purple text-xl transition-colors"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#" class="text-gray-400 hover:text-neon-cyan text-xl transition-colors"><i class="fa-brands fa-twitter"></i></a>
+        </div>
+        <p class="text-gray-500 font-mono text-sm">© 2026 Tanish. Built with <i class="fa-solid fa-microchip mx-1 text-neon-cyan"></i> and Code.</p>
+    </footer>
+
+    <script>
+        // --- 1. Typing Effect Logic ---
+        const typedTextSpan = document.getElementById("typed-text");
+        const textArray = ["Robotics Systems.", "Cloud Architecture.", "Custom PCBs.", "Full-Stack Web Apps."];
+        const typingDelay = 100;
+        const erasingDelay = 50;
+        const newTextDelay = 2000;
+        let textArrayIndex = 0;
+        let charIndex = 0;
+
+        function type() {
+            if (charIndex < textArray[textArrayIndex].length) {
+                typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
+                charIndex++;
+                setTimeout(type, typingDelay);
+            } else {
+                setTimeout(erase, newTextDelay);
+            }
+        }
+
+        function erase() {
+            if (charIndex > 0) {
+                typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex - 1);
+                charIndex--;
+                setTimeout(erase, erasingDelay);
+            } else {
+                textArrayIndex++;
+                if (textArrayIndex >= textArray.length) textArrayIndex = 0;
+                setTimeout(type, typingDelay + 500);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if (textArray.length) setTimeout(type, 1000);
+        });
+
+
+        // --- 2. 3D Tilt Effect for Cards ---
+        const cards = document.querySelectorAll('.tilt-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left; 
+                const y = e.clientY - rect.top;
+                
+                // Calculate rotation limits (-15 to 15 degrees)
+                const rotateX = ((y / rect.height) - 0.5) * -30;
+                const rotateY = ((x / rect.width) - 0.5) * 30;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        });
+
+
+        // --- 3. Interactive Terminal Logic ---
+        const termInput = document.getElementById('term-input');
+        const termOutput = document.getElementById('term-output');
+
+        const commands = {
+            'help': 'Available commands: <br> - <span class="text-neon-cyan">about</span>: Who is Tanish? <br> - <span class="text-neon-cyan">skills</span>: Tech stack & hardware <br> - <span class="text-neon-cyan">projects</span>: View deployments <br> - <span class="text-neon-cyan">clear</span>: Clear terminal window',
+            'about': 'Tanish is a student and developer based in India. He specializes in bridging hardware (microcontrollers, sensors) with software (cloud APIs, backend servers).',
+            'skills': '<span class="text-purple-400">Languages:</span> Python, C++, Node.js, HTML/CSS<br><span class="text-blue-400">Cloud/DevOps:</span> Azure, DigitalOcean, Docker, Git<br><span class="text-green-400">Hardware:</span> ESP32, Arduino, Raspberry Pi, ROS, PCB Design',
+            'projects': 'Executing project overview... Scroll up to the "Featured Deployments" section for visual data.',
+        };
+
+        // Keep input focused when clicking terminal window
+        document.querySelector('.terminal-container').addEventListener('click', () => termInput.focus());
+
+        termInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const inputVal = this.value.trim().toLowerCase();
+                if (inputVal === '') return;
+
+                // Echo the command
+                printToTerminal(`<span class="text-green-400">tanish@maker:~$</span> ${inputVal}`);
+
+                // Process command
+                if (inputVal === 'clear') {
+                    termOutput.innerHTML = '';
+                } else if (commands[inputVal]) {
+                    printToTerminal(commands[inputVal]);
+                } else {
+                    printToTerminal(`Command not found: ${inputVal}. Type 'help' for a list of commands.`, 'text-red-400');
+                }
+
+                // Scroll to bottom and clear input
+                termOutput.scrollTop = termOutput.scrollHeight;
+                this.value = '';
+            }
+        });
+
+        function printToTerminal(html, className = 'text-gray-300') {
+            const div = document.createElement('div');
+            div.className = `mb-2 ${className}`;
+            div.innerHTML = html;
+            termOutput.appendChild(div);
+        }
+
+    </script>
+</body>
+</html>
