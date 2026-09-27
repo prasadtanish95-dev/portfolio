@@ -1,403 +1,1015 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanish | Developer & Maker</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>iOS 27 — Liquid Glass</title>
+<meta name="description" content="An interactive Liquid Glass presentation of a futuristic iPhone running iOS 27." />
+<style>
+/* ========================================
+   TOKENS
+   ======================================== */
+:root{
+  --glass-background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
+  --glass-border: rgba(255,255,255,.22);
+  --glass-blur: 26px;
+  --glass-shadow: 0 24px 60px -24px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.22);
+  --glass-highlight: rgba(255,255,255,.5);
+  --glass-radius: 26px;
+  --ink: #f5f6fa;
+  --ink-dim: rgba(245,246,250,.62);
+  --page: #05060a;
+  --page-2: #0b0f1c;
+  --accent: #5ac8fa;
+  --accent-2: #a78bfa;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --spring: cubic-bezier(.22,1.2,.28,1);
+  --ease: cubic-bezier(.4,0,.2,1);
+  --brightness: 1;
+}
+html[data-theme="light"]{
+  --glass-background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,255,255,.38));
+  --glass-border: rgba(255,255,255,.85);
+  --glass-shadow: 0 24px 50px -24px rgba(24,32,56,.35), inset 0 1px 0 rgba(255,255,255,.9);
+  --ink:#10131c; --ink-dim: rgba(16,19,28,.6);
+  --page:#e9ecf5; --page-2:#f7f8fc;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;overflow-x:hidden}
+body{
+  background:var(--page); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background .6s var(--ease), color .6s var(--ease);
+}
+body::after{ /* grain */
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.05;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence baseFrequency='.85' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='.6'/></svg>");
+}
+canvas#bg3d{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:.85}
+.aurora{position:fixed;inset:-20%;z-index:0;filter:blur(90px);opacity:.75;pointer-events:none;
+  background:
+    radial-gradient(38% 38% at 22% 28%, rgba(90,200,250,.45), transparent 60%),
+    radial-gradient(34% 34% at 78% 22%, rgba(167,139,250,.42), transparent 60%),
+    radial-gradient(42% 42% at 60% 82%, rgba(255,120,180,.28), transparent 62%);
+  animation:drift 26s var(--ease) infinite alternate;
+}
+@keyframes drift{to{transform:translate3d(-4%,3%,0) scale(1.1)}}
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    },
-                    colors: {
-                        dark: '#0a0a0f',
-                        glass: 'rgba(255, 255, 255, 0.05)',
-                        neon: {
-                            cyan: '#00f3ff',
-                            purple: '#bc13fe'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #0a0a0f;
-            color: #e2e8f0;
-            overflow-x: hidden;
-        }
+/* ========================================
+   GLASS SYSTEM
+   ======================================== */
+.glass{position:relative;background:var(--glass-background);border:1px solid var(--glass-border);
+  border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);
+  backdrop-filter:blur(var(--glass-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(180%);
+  overflow:hidden;isolation:isolate;}
+.glass::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(260px circle at var(--mouse-x) var(--mouse-y), var(--glass-highlight), transparent 62%);
+  opacity:.18;transition:opacity .4s var(--ease)}
+.glass:hover::before{opacity:.34}
+.glass::after{content:"";position:absolute;top:-60%;left:-30%;width:40%;height:220%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.22),transparent);
+  transform:rotate(12deg) translateX(-120%);animation:sheen 7s var(--ease) infinite}
+@keyframes sheen{0%,72%{transform:rotate(12deg) translateX(-140%)}100%{transform:rotate(12deg) translateX(420%)}}
+.glass--light{--glass-blur:12px;--glass-background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.02))}
+.glass--strong{--glass-blur:40px;--glass-background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.07))}
+.glass--float{--glass-shadow:0 40px 90px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.3)}
 
-        /* Glassmorphism Utilities */
-        .glass-panel {
-            background: rgba(20, 20, 25, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
+/* ========================================
+   LOADER
+   ======================================== */
+#loader{position:fixed;inset:0;z-index:100;background:#04050a;display:grid;place-items:center;
+  transition:opacity .8s var(--ease),visibility .8s}
+#loader.done{opacity:0;visibility:hidden}
+.orb{width:120px;height:120px;border-radius:50%;
+  background:conic-gradient(from 0deg,#5ac8fa,#a78bfa,#ff7ab4,#5ac8fa);filter:blur(6px);
+  animation:spin 3.2s linear infinite, breathe 2.4s var(--ease) infinite alternate}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{to{transform:scale(1.12)}}
+.loadbar{width:180px;height:3px;border-radius:99px;background:rgba(255,255,255,.14);margin-top:34px;overflow:hidden}
+.loadbar i{display:block;height:100%;width:0;background:#fff;border-radius:99px;transition:width .3s var(--ease)}
+.loadwrap{display:grid;place-items:center}
+.loadwrap p{color:rgba(255,255,255,.5);font-size:12px;letter-spacing:.32em;margin-top:18px;text-transform:uppercase}
 
-        /* Glowing Text Utilities */
-        .text-glow-cyan {
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
-        }
-        .text-glow-purple {
-            text-shadow: 0 0 10px rgba(188, 19, 254, 0.5), 0 0 20px rgba(188, 19, 254, 0.3);
-        }
+/* ========================================
+   NAV
+   ======================================== */
+nav.topnav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;
+  display:flex;align-items:center;gap:6px;padding:7px 10px;--glass-radius:99px;max-width:calc(100vw - 20px)}
+nav.topnav .brand{font-weight:600;font-size:13px;padding:0 10px;white-space:nowrap}
+nav.topnav a{color:var(--ink-dim);text-decoration:none;font-size:12.5px;padding:8px 12px;border-radius:99px;
+  transition:all .3s var(--spring);white-space:nowrap}
+nav.topnav a:hover,nav.topnav a:focus-visible{color:var(--ink);background:rgba(255,255,255,.14);transform:translateY(-1px)}
+.navlinks{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.navlinks::-webkit-scrollbar{display:none}
+.iconbtn{border:1px solid var(--glass-border);background:rgba(255,255,255,.1);color:var(--ink);
+  width:34px;height:34px;border-radius:99px;display:grid;place-items:center;cursor:pointer;font-size:14px;
+  transition:transform .3s var(--spring),background .3s var(--ease)}
+.iconbtn:hover{transform:scale(1.08)}
+.iconbtn:active{transform:scale(.92)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-        /* 3D Tilt Card Base */
-        .tilt-card {
-            transition: transform 0.1s ease, box-shadow 0.3s ease;
-            transform-style: preserve-3d;
-        }
-        .tilt-card:hover {
-            box-shadow: 0 15px 35px rgba(0, 243, 255, 0.2);
-            border-color: rgba(0, 243, 255, 0.4);
-        }
-        .tilt-content {
-            transform: translateZ(30px); /* Pushes content out in 3D space */
-        }
+/* ========================================
+   LAYOUT / SECTIONS
+   ======================================== */
+main{position:relative;z-index:2}
+section.stage{min-height:100svh;display:grid;place-items:center;padding:110px 18px 70px;position:relative}
+.eyebrow{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+h1.display{font-size:clamp(38px,7.4vw,84px);line-height:1.02;margin:0;letter-spacing:-.04em;font-weight:650;
+  background:linear-gradient(180deg,var(--ink),color-mix(in oklab,var(--ink) 55%,transparent));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+h2.title{font-size:clamp(28px,4.6vw,54px);letter-spacing:-.03em;margin:0 0 14px;font-weight:640}
+p.lede{color:var(--ink-dim);font-size:clamp(15px,1.5vw,19px);line-height:1.6;max-width:58ch;margin:16px auto 0}
+.center{text-align:center;max-width:900px}
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease),transform 1s var(--spring)}
+.reveal.in{opacity:1;transform:none}
+.grid{display:grid;gap:16px;width:min(1080px,100%);grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{padding:22px}
+.card h3{margin:0 0 8px;font-size:17px;letter-spacing:-.01em}
+.card p{margin:0;color:var(--ink-dim);font-size:14px;line-height:1.55}
+.hint{color:var(--ink-dim);font-size:12.5px;margin-top:26px;letter-spacing:.04em}
+footer{position:relative;z-index:2;text-align:center;padding:60px 20px 70px;color:var(--ink-dim);font-size:12.5px}
 
-        /* Terminal Styles */
-        .terminal-container {
-            background: #11111b;
-            border: 1px solid #333;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .terminal-output {
-            scrollbar-width: thin;
-            scrollbar-color: #333 #111;
-        }
-        .terminal-output::-webkit-scrollbar {
-            width: 8px;
-        }
-        .terminal-output::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 4px;
-        }
-        .term-input-wrapper input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #00f3ff;
-            font-family: 'Fira Code', monospace;
-            flex-grow: 1;
-            caret-color: #00f3ff;
-        }
+/* ========================================
+   PHONE
+   ======================================== */
+.phone-stage{perspective:1400px;display:grid;place-items:center;width:100%}
+.phone{position:relative;width:min(360px,86vw);aspect-ratio:9/19.5;border-radius:58px;
+  transform-style:preserve-3d;transition:transform .16s linear;
+  background:linear-gradient(150deg,#6d7380,#23262e 22%,#0d0f13 48%,#2c3039 78%,#787f8c);
+  padding:11px;box-shadow:0 70px 110px -50px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.14),inset 0 0 22px rgba(255,255,255,.1);
+  will-change:transform}
+.phone::before{content:"";position:absolute;inset:0;border-radius:58px;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.34),transparent 32%,transparent 66%,rgba(255,255,255,.22));
+  mix-blend-mode:screen;opacity:.55}
+.phone .btn-side{position:absolute;width:3px;border-radius:3px;background:linear-gradient(#9aa1ae,#3a3f49)}
+.btn-side.pw{right:-3px;top:27%;height:11%}
+.btn-side.v1{left:-3px;top:22%;height:7%}
+.btn-side.v2{left:-3px;top:31%;height:7%}
+.screen{position:relative;width:100%;height:100%;border-radius:48px;overflow:hidden;background:#000;
+  filter:brightness(var(--brightness));transition:filter .3s var(--ease)}
+.wall{position:absolute;inset:0;transition:opacity .8s var(--ease);
+  background-size:200% 200%;animation:wallmove 22s var(--ease) infinite alternate}
+@keyframes wallmove{to{background-position:100% 100%}}
+.wall[data-w="blue"]{background-image:radial-gradient(60% 55% at 25% 20%,#1b6fff,transparent 60%),radial-gradient(55% 55% at 80% 80%,#00d4ff55,transparent 60%),linear-gradient(160deg,#04102b,#000814)}
+.wall[data-w="cosmic"]{background-image:radial-gradient(55% 50% at 70% 25%,#8b5cf6,transparent 60%),radial-gradient(60% 60% at 20% 85%,#ec4899aa,transparent 60%),linear-gradient(160deg,#120826,#03010a)}
+.wall[data-w="sunset"]{background-image:radial-gradient(60% 50% at 30% 85%,#ff8a3d,transparent 62%),radial-gradient(60% 50% at 75% 20%,#ff3d77aa,transparent 60%),linear-gradient(180deg,#2a0f3a,#0b0413)}
+.wall[data-w="titanium"]{background-image:linear-gradient(145deg,#4a4f58,#14161b 45%,#2b2f37 80%,#5b6270)}
+.wall[data-w="fluid"]{background-image:radial-gradient(45% 45% at 20% 30%,#22d3ee,transparent 60%),radial-gradient(45% 45% at 80% 35%,#a3e635aa,transparent 60%),radial-gradient(55% 55% at 50% 90%,#f472b6aa,transparent 60%),linear-gradient(160deg,#061014,#01060a)}
 
-        /* Typing Cursor Animation */
-        .cursor-blink {
-            animation: blink 1s step-end infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
+/* Dynamic Island */
+.island{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:8;
+  min-width:96px;height:28px;border-radius:99px;background:#000;border:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;cursor:pointer;color:#fff;
+  transition:all .55s var(--spring);overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.island .di-min{display:flex;align-items:center;gap:7px;font-size:10px;opacity:0;transition:opacity .3s}
+.island.on{min-width:min(86%,250px);height:62px;border-radius:30px;background:rgba(10,10,12,.92);
+  backdrop-filter:blur(20px);padding:0 14px}
+.island.on .di-min{opacity:1}
+.di-art{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,#ff2d55,#ff9500);flex:0 0 auto}
+.di-txt strong{display:block;font-size:11.5px}
+.di-txt span{font-size:10px;opacity:.6}
+.bars{display:flex;align-items:flex-end;gap:2px;margin-left:auto}
+.bars i{width:2.5px;height:8px;background:#5ac8fa;border-radius:2px;animation:eq .9s var(--ease) infinite alternate}
+.bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.45s}
+@keyframes eq{to{height:18px}}
 
-        /* Background Grid Pattern */
-        .bg-grid {
-            background-size: 40px 40px;
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-        }
-    </style>
+/* status bar */
+.status{position:absolute;top:16px;left:0;right:0;z-index:6;display:flex;justify-content:space-between;
+  padding:0 26px;font-size:11px;color:#fff;font-weight:600;pointer-events:none}
+
+/* layers */
+.layer{position:absolute;inset:0;z-index:5;transition:opacity .5s var(--ease),transform .6s var(--spring),filter .5s var(--ease)}
+.layer.hidden{opacity:0;pointer-events:none;transform:scale(1.04);filter:blur(12px)}
+
+/* LOCK SCREEN */
+.lock{display:flex;flex-direction:column;align-items:center;padding:74px 20px 26px;color:#fff;text-align:center}
+.lock .wx{font-size:12px;opacity:.75}
+.lock .clock{font-size:clamp(56px,17vw,74px);font-weight:250;letter-spacing:-.04em;line-height:1;margin-top:2px;
+  text-shadow:0 10px 30px rgba(0,0,0,.45)}
+.lock .date{font-size:13px;opacity:.85;margin-top:4px}
+.lock .notes{width:100%;margin-top:auto;display:grid;gap:8px}
+.lock .quick{display:flex;justify-content:space-between;width:100%;margin-top:14px}
+.qbtn{width:44px;height:44px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(14px);color:#fff;display:grid;place-items:center;cursor:pointer;font-size:16px;
+  transition:transform .3s var(--spring),background .3s}
+.qbtn.on{background:#fff;color:#111}
+.qbtn:active{transform:scale(.88)}
+.swipeup{font-size:11px;opacity:.65;margin-top:14px;animation:bob 2s var(--ease) infinite alternate}
+@keyframes bob{to{transform:translateY(-5px);opacity:1}}
+.note{padding:10px 12px;text-align:left;--glass-radius:18px;--glass-blur:18px;color:#fff;
+  display:flex;gap:10px;align-items:center;cursor:grab;transition:transform .35s var(--spring),opacity .35s}
+.note strong{font-size:12px;display:block}.note p{margin:2px 0 0;font-size:11px;opacity:.72}
+.note .ni{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+
+/* HOME SCREEN */
+.home{display:flex;flex-direction:column;padding:56px 0 14px;color:#fff}
+.pages{flex:1;display:flex;transition:transform .55s var(--spring)}
+.page{min-width:100%;padding:8px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px 12px;align-content:start}
+.page.widgets{grid-template-columns:repeat(2,1fr)}
+.app{background:none;border:0;padding:0;cursor:pointer;color:#fff;display:grid;justify-items:center;gap:6px;
+  transition:transform .35s var(--spring)}
+.app:hover{transform:scale(1.09) translateY(-2px)}
+.app:active{transform:scale(.9)}
+.app .ico{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font-size:22px;color:#fff;
+  box-shadow:0 10px 18px -8px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.45)}
+.app .ico::after{content:"";position:absolute}
+.app span{font-size:9.5px;opacity:.92;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.app.jiggle{animation:jig .35s var(--ease) infinite alternate}
+@keyframes jig{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
+.widget{--glass-radius:20px;padding:14px;color:#fff;text-align:left;grid-column:span 2}
+.widget h4{margin:0 0 6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.wtemp{font-size:32px;font-weight:300;letter-spacing:-.03em}
+.hours{display:flex;justify-content:space-between;margin-top:10px;font-size:10px;opacity:.8}
+.hours div{display:grid;gap:4px;justify-items:center}
+.pgdots{display:flex;gap:6px;justify-content:center;padding:8px 0 6px}
+.pgdots i{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.35);transition:all .3s}
+.pgdots i.on{background:#fff;width:18px}
+.dock{margin:0 12px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;--glass-radius:26px;--glass-blur:26px}
+.searchpill{display:block;margin:0 auto 8px;font-size:11px;color:#fff;background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.22);padding:5px 14px;border-radius:99px;cursor:pointer;backdrop-filter:blur(10px)}
+.bar-home{width:110px;height:4.5px;border-radius:99px;background:rgba(255,255,255,.75);margin:8px auto 0;cursor:pointer}
+
+/* OVERLAYS inside phone */
+.sheet{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;padding:56px 14px 18px;
+  background:rgba(0,0,0,.28);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);color:#fff;
+  transition:opacity .45s var(--ease),transform .5s var(--spring)}
+.sheet.hidden{opacity:0;pointer-events:none;transform:translateY(-14%)}
+.sheet.up.hidden{transform:translateY(14%)}
+.cc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{--glass-radius:20px;--glass-blur:20px;padding:10px;display:grid;place-items:center;gap:4px;cursor:pointer;
+  color:#fff;font-size:10px;min-height:62px;border:1px solid var(--glass-border);background:var(--glass-background);
+  border-radius:var(--glass-radius);backdrop-filter:blur(20px);transition:all .35s var(--spring)}
+.tile.wide{grid-column:span 2}
+.tile.on{background:linear-gradient(145deg,#4f9dff,#2b6ef5);border-color:rgba(255,255,255,.5)}
+.tile:active{transform:scale(.94)}
+.tile b{font-size:16px}
+.sliders{display:flex;gap:10px;margin-top:10px;height:150px}
+.vslider{flex:1;border-radius:22px;position:relative;overflow:hidden;cursor:pointer;
+  background:rgba(255,255,255,.14);border:1px solid var(--glass-border);backdrop-filter:blur(18px)}
+.vslider i{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.9);transition:height .2s var(--ease)}
+.vslider span{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:14px;color:#222;z-index:2;mix-blend-mode:difference}
+.miniplayer{margin-top:10px;padding:12px;--glass-radius:20px;display:flex;align-items:center;gap:10px;color:#fff}
+.miniplayer .art{width:40px;height:40px;border-radius:10px;background:linear-gradient(140deg,#ff2d55,#ff9500)}
+.mp-ctrl{margin-left:auto;display:flex;gap:12px;font-size:14px}
+.mp-ctrl button{background:none;border:0;color:#fff;cursor:pointer;font-size:14px}
+.sheet h5{margin:0 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
+.spot input{width:100%;padding:13px 16px;border-radius:16px;border:1px solid var(--glass-border);
+  background:rgba(255,255,255,.16);color:#fff;font-size:15px;outline:none;backdrop-filter:blur(18px)}
+.spot input::placeholder{color:rgba(255,255,255,.55)}
+.results{margin-top:12px;display:grid;gap:8px;overflow:auto}
+.result{display:flex;align-items:center;gap:10px;padding:8px;border-radius:14px;background:rgba(255,255,255,.1);
+  cursor:pointer;font-size:12.5px;border:0;color:#fff;text-align:left;transition:background .25s}
+.result:hover{background:rgba(255,255,255,.2)}
+.result .ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:14px}
+.cat{margin-bottom:10px;padding:12px;--glass-radius:20px;color:#fff}
+.cat .mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.mini .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:15px;margin:auto}
+
+/* APP WINDOW */
+.appwin{position:absolute;inset:0;z-index:30;background:rgba(8,9,14,.86);backdrop-filter:blur(30px);
+  color:#fff;display:flex;flex-direction:column;transform-origin:50% 50%;
+  transition:opacity .4s var(--ease),transform .5s var(--spring)}
+.appwin.hidden{opacity:0;pointer-events:none;transform:scale(.24);border-radius:60px}
+.appwin header{padding:54px 18px 10px;display:flex;align-items:center;gap:10px}
+.appwin header h3{margin:0;font-size:19px;letter-spacing:-.02em}
+.appwin .body{flex:1;overflow:auto;padding:6px 16px 16px;font-size:13px}
+.appwin .body::-webkit-scrollbar{width:0}
+.row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.08);margin-bottom:8px}
+.row .grow{flex:1}
+.row small{opacity:.6;display:block;font-size:11px;margin-top:2px}
+.switch{width:44px;height:26px;border-radius:99px;background:rgba(255,255,255,.22);position:relative;cursor:pointer;flex:0 0 auto;transition:background .3s}
+.switch i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:99px;background:#fff;transition:left .3s var(--spring)}
+.switch.on{background:#34c759}.switch.on i{left:21px}
+.bubbles{display:grid;gap:8px}
+.bub{max-width:76%;padding:9px 13px;border-radius:18px;font-size:12.5px;line-height:1.4}
+.bub.me{margin-left:auto;background:linear-gradient(140deg,#0a84ff,#0060df);border-bottom-right-radius:6px}
+.bub.them{background:rgba(255,255,255,.14);border-bottom-left-radius:6px}
+.photogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.photogrid div{aspect-ratio:1;border-radius:8px;cursor:pointer;transition:transform .3s var(--spring)}
+.photogrid div:hover{transform:scale(1.08)}
+.map{position:relative;height:210px;border-radius:18px;overflow:hidden;background:linear-gradient(160deg,#0f2027,#1c3b4a)}
+.map i{position:absolute;background:rgba(255,255,255,.16)}
+.pin{position:absolute;top:44%;left:48%;width:16px;height:16px;border-radius:99px;background:#0a84ff;
+  box-shadow:0 0 0 6px rgba(10,132,255,.28);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 14px rgba(10,132,255,0)}}
+.prog{height:4px;border-radius:99px;background:rgba(255,255,255,.2);margin:12px 0 6px;overflow:hidden}
+.prog i{display:block;height:100%;background:#fff;width:38%}
+.bigart{width:100%;aspect-ratio:1;border-radius:20px;background:linear-gradient(140deg,#ff2d55,#ff9500)}
+.closebtn{margin-left:auto}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:70;padding:11px 18px;
+  --glass-radius:99px;font-size:13px;opacity:0;transition:all .45s var(--spring);pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.wallpicker{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+.wallpicker button{width:38px;height:38px;border-radius:12px;border:1px solid var(--glass-border);cursor:pointer;
+  transition:transform .3s var(--spring)}
+.wallpicker button:hover{transform:scale(1.12)}
+.wallpicker button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:2px}
+
+@media (max-width:640px){
+  section.stage{padding:96px 14px 56px}
+  nav.topnav .navlinks a:nth-child(n+4){display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;transition-duration:.12s!important}
+}
+</style>
 </head>
-<body class="antialiased selection:bg-neon-cyan selection:text-black">
+<body>
 
-    <nav class="fixed w-full z-50 glass-panel border-b-0 border-white/10 top-0">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#home" class="text-2xl font-bold tracking-tighter text-white hover:text-neon-cyan transition-colors">
-                TANISH<span class="text-neon-purple">.</span>
-            </a>
-            <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide">
-                <a href="#home" class="hover:text-neon-cyan transition-colors">HOME</a>
-                <a href="#projects" class="hover:text-neon-purple transition-colors">PROJECTS</a>
-                <a href="#terminal" class="hover:text-neon-cyan transition-colors">TERMINAL</a>
-                <a href="#contact" class="hover:text-neon-purple transition-colors">CONTACT</a>
+<div id="loader"><div class="loadwrap"><div class="orb"></div><div class="loadbar"><i></i></div><p>iOS 27</p></div></div>
+
+<div class="aurora"></div>
+<canvas id="bg3d" aria-hidden="true"></canvas>
+
+<nav class="topnav glass" aria-label="Main">
+  <span class="brand">iOS&nbsp;27</span>
+  <div class="navlinks">
+    <a href="#overview">Overview</a>
+    <a href="#glass">Liquid Glass</a>
+    <a href="#experience">Experience</a>
+    <a href="#features">Features</a>
+    <a href="#design">Design</a>
+  </div>
+  <button class="iconbtn" id="themeBtn" aria-label="Toggle appearance">◐</button>
+  <button class="iconbtn" id="soundBtn" aria-label="Toggle sound" aria-pressed="false">🔇</button>
+</nav>
+
+<main>
+  <!-- HERO + PHONE -->
+  <section class="stage" id="overview">
+    <div class="center">
+      <p class="eyebrow reveal">A new dimension of iOS</p>
+      <h1 class="display reveal">Liquid Glass,<br/>alive in your hands.</h1>
+      <p class="lede reveal">Move your cursor. Unlock it. Open apps, pull down Control Center, swipe pages.
+        This is a real, interactive interface — not a mockup.</p>
+    </div>
+
+    <div class="phone-stage" style="margin-top:44px">
+      <div class="phone" id="phone" tabindex="0" role="application" aria-label="Interactive iPhone running iOS 27">
+        <span class="btn-side pw"></span><span class="btn-side v1"></span><span class="btn-side v2"></span>
+        <div class="screen" id="screen">
+          <div class="wall" id="wall" data-w="blue"></div>
+
+          <div class="status"><span id="stTime">9:41</span><span>WiFi ▮ 100%</span></div>
+
+          <button class="island" id="island" aria-label="Dynamic Island">
+            <span class="di-min">
+              <span class="di-art"></span>
+              <span class="di-txt"><strong id="diTitle">Glass Horizon</strong><span id="diSub">Aurora Unit</span></span>
+              <span class="bars"><i></i><i></i><i></i><i></i></span>
+            </span>
+          </button>
+
+          <!-- LOCK -->
+          <div class="layer lock" id="lockLayer">
+            <div class="wx">Cupertino · 21° Mostly Clear</div>
+            <div class="clock" id="lockClock">9:41</div>
+            <div class="date" id="lockDate">Sunday, September 27</div>
+            <div class="notes" id="lockNotes"></div>
+            <div class="quick">
+              <button class="qbtn" id="flashQ" aria-label="Flashlight">🔦</button>
+              <button class="qbtn" aria-label="Camera" data-open="camera">📷</button>
             </div>
-            <a href="#contact" class="hidden md:block px-5 py-2 rounded-full bg-transparent border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black transition-all duration-300 font-semibold shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]">
-                Initialize <i class="fa-solid fa-bolt ml-1"></i>
-            </a>
-            <!-- Mobile Menu Icon -->
-            <button class="md:hidden text-gray-300 hover:text-white">
-                <i class="fa-solid fa-bars text-2xl"></i>
-            </button>
-        </div>
-    </nav>
+            <div class="swipeup">Swipe up or tap to unlock</div>
+          </div>
 
-    <section id="home" class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-        <div class="absolute inset-0 bg-grid pointer-events-none z-0"></div>
-        
-        <!-- Glowing background blobs -->
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-purple/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[100px] pointer-events-none"></div>
+          <!-- HOME -->
+          <div class="layer home hidden" id="homeLayer">
+            <button class="searchpill" id="spotOpen">🔍 Search</button>
+            <div class="pages" id="pages"></div>
+            <div class="pgdots" id="dots"></div>
+            <div class="dock glass" id="dock"></div>
+            <div class="bar-home" id="homeBar" title="Home"></div>
+          </div>
 
-        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
-            <p class="text-neon-cyan font-mono mb-4 tracking-widest uppercase">System Online // Welcome</p>
-            <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight">
-                Hi, I'm <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan to-neon-purple text-glow-cyan">Tanish</span>
-            </h1>
-            <div class="text-2xl md:text-4xl font-semibold text-gray-300 mb-8 h-12">
-                &gt; I build <span id="typed-text" class="text-white"></span><span class="cursor-blink text-neon-purple">_</span>
+          <!-- CONTROL CENTER -->
+          <div class="sheet hidden" id="ccLayer" aria-label="Control Center">
+            <h5>Control Center</h5>
+            <div class="cc-grid" id="ccGrid"></div>
+            <div class="sliders">
+              <div class="vslider" id="brightSl" role="slider" aria-label="Brightness" tabindex="0"><i style="height:80%"></i><span>☀</span></div>
+              <div class="vslider" id="volSl" role="slider" aria-label="Volume" tabindex="0"><i style="height:55%"></i><span>♪</span></div>
             </div>
-            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-                A maker and developer bridging the gap between hardware and software. Specializing in cloud infrastructure, embedded systems, and robotics engineering.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#projects" class="px-8 py-4 rounded-lg bg-gradient-to-r from-neon-cyan to-blue-600 text-black font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(0,243,255,0.4)]">
-                    View Hardware & Code
-                </a>
-                <a href="#terminal" class="px-8 py-4 rounded-lg glass-panel border border-white/20 text-white font-bold text-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-terminal"></i> Access Terminal
-                </a>
+            <div class="miniplayer glass">
+              <span class="art"></span>
+              <span><strong style="font-size:12px">Glass Horizon</strong><br/><span style="font-size:10.5px;opacity:.65">Aurora Unit</span></span>
+              <span class="mp-ctrl"><button data-mp="prev">⏮</button><button data-mp="play" id="mpPlay">⏸</button><button data-mp="next">⏭</button></span>
             </div>
+          </div>
+
+          <!-- NOTIFICATION CENTER -->
+          <div class="sheet hidden" id="ncLayer" aria-label="Notification Center">
+            <h5>Notifications</h5>
+            <div class="notes" id="ncList" style="gap:10px"></div>
+          </div>
+
+          <!-- SPOTLIGHT -->
+          <div class="sheet up hidden spot" id="spotLayer" aria-label="Spotlight Search">
+            <input id="spotInput" type="search" placeholder="Search apps, people, settings" aria-label="Search" />
+            <div class="results" id="spotResults"></div>
+          </div>
+
+          <!-- APP LIBRARY -->
+          <div class="sheet hidden" id="libLayer" aria-label="App Library">
+            <h5>App Library</h5>
+            <div id="libList" style="overflow:auto"></div>
+          </div>
+
+          <!-- APP WINDOW -->
+          <div class="appwin hidden" id="appwin" role="dialog" aria-label="Application">
+            <header><span class="ico" id="awIco" style="width:30px;height:30px;border-radius:9px;display:grid;place-items:center"></span>
+              <h3 id="awTitle">App</h3>
+              <button class="iconbtn closebtn" id="awClose" aria-label="Close app">✕</button></header>
+            <div class="body" id="awBody"></div>
+            <div class="bar-home" id="awBar"></div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+    <p class="hint reveal">Tip: drag the phone · press <kbd>Esc</kbd> to go home · <kbd>/</kbd> for Spotlight · triple-tap the Island</p>
+    <div class="wallpicker" id="wallPicker" aria-label="Wallpapers"></div>
+  </section>
 
-    <section id="projects" class="relative py-24 px-6 z-10">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-4xl md:text-5xl font-bold mb-16 text-center">
-                Featured <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan text-glow-purple">Deployments</span>
-            </h2>
+  <!-- GLASS -->
+  <section class="stage" id="glass">
+    <div class="center reveal"><h2 class="title">Liquid Glass</h2>
+      <p class="lede">Four glass levels, cursor-tracked specular light, animated reflections and real backdrop refraction.</p></div>
+    <div class="grid" style="margin-top:34px">
+      <div class="glass glass--light card reveal"><h3>Light Glass</h3><p>12px blur for chrome and pills that must stay legible over motion.</p></div>
+      <div class="glass card reveal"><h3>Medium Glass</h3><p>The default surface: 26px blur, inner highlight, soft ambient shadow.</p></div>
+      <div class="glass glass--strong card reveal"><h3>Strong Glass</h3><p>40px blur with saturation boost for sheets and Control Center.</p></div>
+      <div class="glass glass--float card reveal"><h3>Floating Glass</h3><p>Deep elevation shadow — panels that hover above the environment.</p></div>
+    </div>
+  </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                <!-- Project Card 1 -->
-                <div class="tilt-card glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-neon-cyan/10 rounded-full blur-[40px] group-hover:bg-neon-cyan/30 transition-colors"></div>
-                    <div class="tilt-content h-full flex flex-col">
-                        <div class="w-14 h-14 rounded-lg bg-black border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
-                            <i class="fa-solid fa-microchip text-2xl text-neon-cyan"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-3">Custom Smart IoT Hub</h3>
-                        <p class="text-gray-400 mb-6 flex-grow">Designed a custom PCB utilizing ESP32 microcontrollers to interface with home automation APIs and manage edge sensor networks.</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-cyan-300">C++</span>
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-cyan-300">PCB Design</span>
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-cyan-300">MQTT</span>
-                        </div>
-                    </div>
-                </div>
+  <!-- EXPERIENCE -->
+  <section class="stage" id="experience">
+    <div class="center reveal"><h2 class="title">Designed around you</h2>
+      <p class="lede">Widgets, wallpapers, focus and appearance all shift with you — live, on the device above.</p></div>
+    <div class="grid" style="margin-top:34px">
+      <div class="glass card reveal"><h3>Spatial app opening</h3><p>Icons expand into full-screen apps with a spring-driven scale and blur.</p></div>
+      <div class="glass card reveal"><h3>Dynamic Island</h3><p>A pill that grows into now-playing, timers and calls.</p></div>
+      <div class="glass card reveal"><h3>Control Center</h3><p>Glass tiles with real toggles, brightness and volume that actually change the screen.</p></div>
+    </div>
+  </section>
 
-                <!-- Project Card 2 -->
-                <div class="tilt-card glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-neon-purple/10 rounded-full blur-[40px] group-hover:bg-neon-purple/30 transition-colors"></div>
-                    <div class="tilt-content h-full flex flex-col">
-                        <div class="w-14 h-14 rounded-lg bg-black border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(188,19,254,0.2)]">
-                            <i class="fa-solid fa-robot text-2xl text-neon-purple"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-3">Autonomous Rover</h3>
-                        <p class="text-gray-400 mb-6 flex-grow">Programmed a wheeled robot featuring obstacle avoidance via LiDAR, servo-driven camera gimbals, and ROS (Robot Operating System) mapping.</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-purple-300">Python</span>
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-purple-300">ROS</span>
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-purple-300">Hardware</span>
-                        </div>
-                    </div>
-                </div>
+  <section class="stage" id="features">
+    <div class="center reveal"><h2 class="title">Everything feels alive</h2>
+      <p class="lede">Spring physics, cursor-reactive light, parallax depth and a slow 3D glass environment behind everything.</p></div>
+    <div class="grid" style="margin-top:34px">
+      <div class="glass card reveal"><h3>Gestures</h3><p>Tap, double-tap, long-press, drag and horizontal swipe — mouse and touch.</p></div>
+      <div class="glass card reveal"><h3>Spotlight</h3><p>Type to filter every app instantly; Escape dismisses.</p></div>
+      <div class="glass card reveal"><h3>App Library</h3><p>Apps grouped by category with live search.</p></div>
+    </div>
+  </section>
 
-                <!-- Project Card 3 -->
-                <div class="tilt-card glass-panel rounded-2xl p-6 border border-white/10 relative overflow-hidden group cursor-pointer">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] group-hover:bg-blue-500/30 transition-colors"></div>
-                    <div class="tilt-content h-full flex flex-col">
-                        <div class="w-14 h-14 rounded-lg bg-black border border-white/10 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                            <i class="fa-solid fa-cloud text-2xl text-blue-400"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-3">Cloud AI Infrastructure</h3>
-                        <p class="text-gray-400 mb-6 flex-grow">Deployed scalable Linux virtual machines and Docker containers on cloud providers to run a self-hosted computer vision pipeline.</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-blue-300">Docker</span>
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-blue-300">Azure / Linux</span>
-                            <span class="px-3 py-1 text-xs font-mono rounded bg-white/5 border border-white/10 text-blue-300">Node.js</span>
-                        </div>
-                    </div>
-                </div>
+  <section class="stage" id="design">
+    <div class="center reveal"><h2 class="title">The new iPhone experience</h2>
+      <p class="lede">Scroll back up and keep exploring — every surface above responds to you.</p>
+      <p class="hint">iOS <span id="verEgg" style="cursor:pointer;text-decoration:underline dotted">27.0 (Glass)</span></p>
+    </div>
+  </section>
+</main>
 
-            </div>
-        </div>
-    </section>
+<footer>A fictional concept experience. Not affiliated with Apple.</footer>
+<div class="toast glass" id="toast">Ready</div>
 
-    <section id="terminal" class="py-24 px-6 relative">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-white mb-4"><i class="fa-solid fa-terminal mr-2 text-neon-cyan"></i> Interactive Shell</h2>
-                <p class="text-gray-400">Type <code class="bg-white/10 px-2 py-1 rounded text-neon-purple font-mono">help</code> to see available commands.</p>
-            </div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+/* ========================================
+   APP STATE
+   ======================================== */
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOBILE = window.matchMedia('(max-width: 780px)').matches;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-            <!-- Terminal Window -->
-            <div class="terminal-container rounded-xl overflow-hidden flex flex-col h-[400px]">
-                <!-- Mac-like Header -->
-                <div class="bg-[#1e1e2e] px-4 py-3 flex items-center gap-2 border-b border-white/10">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <div class="flex-grow text-center text-xs text-gray-400 font-mono">tanish@portfolio:~</div>
-                </div>
-                <!-- Terminal Body -->
-                <div class="p-4 font-mono text-sm sm:text-base flex-grow overflow-y-auto terminal-output" id="term-output">
-                    <div class="text-gray-300 mb-2">Establishing secure connection... <span class="text-green-400">OK</span></div>
-                    <div class="text-gray-300 mb-4">Welcome to TanishOS v1.0.0.</div>
-                </div>
-                <!-- Input Line -->
-                <div class="bg-[#11111b] p-4 flex items-center font-mono term-input-wrapper border-t border-white/5">
-                    <span class="text-green-400 mr-2">tanish@maker:~$</span>
-                    <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus placeholder="Type a command...">
-                </div>
-            </div>
-        </div>
-    </section>
+const state = {
+  locked: true, page: 0, app: null, sound: false, playing: true,
+  brightness: .8, volume: .55, jiggle: false,
+  toggles: { wifi: true, bt: true, air: false, cell: true, focus: false, mirror: false, flash: false }
+};
 
-    <section id="contact" class="py-24 px-6 relative z-10">
-        <div class="max-w-3xl mx-auto glass-panel p-8 md:p-12 rounded-2xl border border-white/10">
-            <h2 class="text-3xl md:text-4xl font-bold text-center mb-2">Initiate <span class="text-neon-cyan">Handshake</span></h2>
-            <p class="text-center text-gray-400 mb-8">Ready to collaborate on hardware or cloud projects? Send a signal.</p>
-            
-            <form id="contact-form" class="space-y-6" onsubmit="event.preventDefault(); document.getElementById('contact-btn').innerText='Message Transmitted!'; setTimeout(()=>document.getElementById('contact-btn').innerText='Send Message', 3000); this.reset();">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2 font-mono">Your Name</label>
-                        <input type="text" required class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2 font-mono">Your Email</label>
-                        <input type="email" required class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-2 font-mono">Transmission Data (Message)</label>
-                    <textarea rows="4" required class="w-full bg-dark/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all resize-none"></textarea>
-                </div>
-                <button type="submit" id="contact-btn" class="w-full py-4 rounded-lg bg-white text-black font-bold text-lg hover:bg-neon-cyan hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all duration-300">
-                    Send Message
-                </button>
-            </form>
-        </div>
-    </section>
+const APPS = [
+  { id:'messages', name:'Messages', icon:'💬', g:'linear-gradient(160deg,#5ee07b,#12a63a)', cat:'Social' },
+  { id:'phone', name:'Phone', icon:'📞', g:'linear-gradient(160deg,#6ee88a,#0d8f36)', cat:'Social' },
+  { id:'safari', name:'Safari', icon:'🧭', g:'linear-gradient(160deg,#7fd6ff,#0a6dd8)', cat:'Utilities' },
+  { id:'photos', name:'Photos', icon:'🌸', g:'linear-gradient(160deg,#fff0a8,#ff6fa8)', cat:'Creativity' },
+  { id:'camera', name:'Camera', icon:'📷', g:'linear-gradient(160deg,#9aa2ad,#3c424c)', cat:'Creativity' },
+  { id:'maps', name:'Maps', icon:'🗺️', g:'linear-gradient(160deg,#8ef0b0,#2f9bd6)', cat:'Utilities' },
+  { id:'music', name:'Music', icon:'🎵', g:'linear-gradient(160deg,#ff5f6d,#ff2d55)', cat:'Entertainment' },
+  { id:'weather', name:'Weather', icon:'⛅', g:'linear-gradient(160deg,#63b8ff,#0b57c9)', cat:'Utilities' },
+  { id:'settings', name:'Settings', icon:'⚙️', g:'linear-gradient(160deg,#c8ced8,#6b7280)', cat:'Utilities' },
+  { id:'mail', name:'Mail', icon:'✉️', g:'linear-gradient(160deg,#7cc4ff,#1264d8)', cat:'Productivity' },
+  { id:'calendar', name:'Calendar', icon:'📅', g:'linear-gradient(160deg,#ffffff,#e6e8ee)', cat:'Productivity' },
+  { id:'files', name:'Files', icon:'📁', g:'linear-gradient(160deg,#7fc9ff,#2b6ef5)', cat:'Productivity' },
+  { id:'notes', name:'Notes', icon:'📝', g:'linear-gradient(160deg,#fff3b0,#f7c948)', cat:'Productivity' },
+  { id:'appstore', name:'App Store', icon:'🅰️', g:'linear-gradient(160deg,#5ac8fa,#0a63d8)', cat:'Entertainment' },
+  { id:'calculator', name:'Calculator', icon:'🧮', g:'linear-gradient(160deg,#3a3f49,#15171c)', cat:'Utilities' },
+  { id:'podcasts', name:'Podcasts', icon:'🎙️', g:'linear-gradient(160deg,#c084fc,#7c3aed)', cat:'Entertainment' }
+];
+const DOCK = ['phone','safari','messages','music'];
 
-    <footer class="border-t border-white/10 bg-dark py-8 text-center">
-        <div class="flex justify-center space-x-6 mb-4">
-            <a href="#" class="text-gray-400 hover:text-neon-cyan text-xl transition-colors"><i class="fa-brands fa-github"></i></a>
-            <a href="#" class="text-gray-400 hover:text-neon-purple text-xl transition-colors"><i class="fa-brands fa-linkedin"></i></a>
-            <a href="#" class="text-gray-400 hover:text-neon-cyan text-xl transition-colors"><i class="fa-brands fa-twitter"></i></a>
-        </div>
-        <p class="text-gray-500 font-mono text-sm">© 2026 Tanish. Built with <i class="fa-solid fa-microchip mx-1 text-neon-cyan"></i> and Code.</p>
-    </footer>
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1700); }
 
-    <script>
-        // --- 1. Typing Effect Logic ---
-        const typedTextSpan = document.getElementById("typed-text");
-        const textArray = ["Robotics Systems.", "Cloud Architecture.", "Custom PCBs.", "Full-Stack Web Apps."];
-        const typingDelay = 100;
-        const erasingDelay = 50;
-        const newTextDelay = 2000;
-        let textArrayIndex = 0;
-        let charIndex = 0;
+/* ========================================
+   SOUND (WebAudio, opt-in)
+   ======================================== */
+let actx=null;
+function blip(freq=520, dur=.08, type='sine'){
+  if(!state.sound) return;
+  actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.value=freq; g.gain.value=.06;
+  o.connect(g).connect(actx.destination); o.start();
+  g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime+dur);
+  o.stop(actx.currentTime+dur+.02);
+}
+$('#soundBtn').addEventListener('click', e=>{
+  state.sound=!state.sound;
+  e.currentTarget.textContent = state.sound?'🔊':'🔇';
+  e.currentTarget.setAttribute('aria-pressed', String(state.sound));
+  blip(660); toast(state.sound?'Sound on':'Sound off');
+});
 
-        function type() {
-            if (charIndex < textArray[textArrayIndex].length) {
-                typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
-                charIndex++;
-                setTimeout(type, typingDelay);
-            } else {
-                setTimeout(erase, newTextDelay);
-            }
-        }
+/* ========================================
+   THEME + WALLPAPER
+   ======================================== */
+$('#themeBtn').addEventListener('click', ()=>{
+  const el=document.documentElement;
+  el.dataset.theme = el.dataset.theme==='dark'?'light':'dark';
+  blip(440); toast(el.dataset.theme==='dark'?'Dark appearance':'Light appearance');
+});
+const WALLS=[['blue','Deep Blue Liquid','linear-gradient(145deg,#1b6fff,#000814)'],
+  ['cosmic','Purple Cosmic','linear-gradient(145deg,#8b5cf6,#120826)'],
+  ['sunset','Sunset','linear-gradient(145deg,#ff8a3d,#2a0f3a)'],
+  ['titanium','Black Titanium','linear-gradient(145deg,#5b6270,#14161b)'],
+  ['fluid','Colorful Fluid','linear-gradient(145deg,#22d3ee,#f472b6)']];
+$('#wallPicker').innerHTML = WALLS.map(([id,label,bg],i)=>
+  `<button data-wall="${id}" style="background:${bg}" title="${label}" aria-label="${label}" aria-pressed="${i===0}"></button>`).join('');
+$('#wallPicker').addEventListener('click', e=>{
+  const b=e.target.closest('[data-wall]'); if(!b) return;
+  $('#wall').dataset.w=b.dataset.wall;
+  $$('#wallPicker button').forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
+  blip(520); toast(b.title);
+});
 
-        function erase() {
-            if (charIndex > 0) {
-                typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex - 1);
-                charIndex--;
-                setTimeout(erase, erasingDelay);
-            } else {
-                textArrayIndex++;
-                if (textArrayIndex >= textArray.length) textArrayIndex = 0;
-                setTimeout(type, typingDelay + 500);
-            }
-        }
+/* ========================================
+   CLOCK
+   ======================================== */
+function tick(){
+  const d=new Date();
+  const t=d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  $('#lockClock').textContent=t; $('#stTime').textContent=t;
+  $('#lockDate').textContent=d.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+}
+tick(); setInterval(tick, 10000);
 
-        document.addEventListener("DOMContentLoaded", function() {
-            if (textArray.length) setTimeout(type, 1000);
-        });
+/* ========================================
+   PHONE INTERACTION (3D tilt + drag)
+   ======================================== */
+const phone=$('#phone');
+const tilt={x:0,y:0,tx:0,ty:0,scroll:0,sTarget:0,drag:0,dTarget:0};
+if(!REDUCED){
+  window.addEventListener('pointermove', e=>{
+    const cx=window.innerWidth/2, cy=window.innerHeight/2;
+    tilt.ty=((e.clientX-cx)/cx)*11;
+    tilt.tx=-((e.clientY-cy)/cy)*8;
+  }, {passive:true});
+}
+let dragging=false, dragStart=0;
+phone.addEventListener('pointerdown', e=>{ dragging=true; dragStart=e.clientX; });
+window.addEventListener('pointermove', e=>{ if(dragging) tilt.dTarget=Math.max(-26,Math.min(26,(e.clientX-dragStart)/5)); }, {passive:true});
+window.addEventListener('pointerup', ()=>{
+  if(dragging && Math.abs(tilt.dTarget)>20){ toast('Liquid shake ✦'); blip(880,.14,'triangle'); }
+  dragging=false; tilt.dTarget=0;
+});
 
+function frame(){
+  tilt.x += (tilt.tx-tilt.x)*.06;
+  tilt.y += (tilt.ty-tilt.y)*.06;
+  tilt.scroll += (tilt.sTarget-tilt.scroll)*.07;
+  tilt.drag += (tilt.dTarget-tilt.drag)*.12;
+  const s = 1 - Math.min(.16, Math.abs(tilt.scroll)*.0016);
+  phone.style.transform=
+    `translateY(${tilt.scroll*-.05}px) scale(${s}) rotateX(${tilt.x}deg) rotateY(${tilt.y+tilt.drag}deg) rotateZ(${tilt.drag*.12}deg)`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
 
-        // --- 2. 3D Tilt Effect for Cards ---
-        const cards = document.querySelectorAll('.tilt-card');
-        cards.forEach(card => {
-            card.addEventListener('mousemove', e => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left; 
-                const y = e.clientY - rect.top;
-                
-                // Calculate rotation limits (-15 to 15 degrees)
-                const rotateX = ((y / rect.height) - 0.5) * -30;
-                const rotateY = ((x / rect.width) - 0.5) * 30;
-                
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-            });
+/* ========================================
+   SCROLL ANIMATIONS
+   ======================================== */
+window.addEventListener('scroll', ()=>{ tilt.sTarget = window.scrollY; }, {passive:true});
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); }), {threshold:.18});
+$$('.reveal').forEach((el,i)=>{ el.style.transitionDelay=(i%6)*60+'ms'; io.observe(el); });
 
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-            });
-        });
+/* cursor-tracked glass light */
+document.addEventListener('pointermove', e=>{
+  const g=e.target.closest('.glass, .tile, .note, .widget'); if(!g) return;
+  const r=g.getBoundingClientRect();
+  g.style.setProperty('--mouse-x', ((e.clientX-r.left)/r.width*100)+'%');
+  g.style.setProperty('--mouse-y', ((e.clientY-r.top)/r.height*100)+'%');
+}, {passive:true});
 
+/* ========================================
+   LOCK / UNLOCK
+   ======================================== */
+const NOTIFS=[
+  {app:'Messages', icon:'💬', g:'linear-gradient(160deg,#5ee07b,#12a63a)', title:'Maya', body:'The Liquid Glass build looks unreal 🤯'},
+  {app:'Calendar', icon:'📅', g:'linear-gradient(160deg,#fff,#e6e8ee)', title:'Design Review', body:'In 25 minutes · Studio 4'},
+  {app:'Weather', icon:'⛅', g:'linear-gradient(160deg,#63b8ff,#0b57c9)', title:'Weather', body:'Clear skies through the evening'},
+  {app:'Music', icon:'🎵', g:'linear-gradient(160deg,#ff5f6d,#ff2d55)', title:'New Release', body:'Aurora Unit — “Glass Horizon”'},
+  {app:'Settings', icon:'⚙️', g:'linear-gradient(160deg,#c8ced8,#6b7280)', title:'iOS 27.0', body:'Your device is up to date'}
+];
+function noteHTML(n){
+  return `<div class="note glass" tabindex="0" data-app="${n.app.toLowerCase()}">
+    <span class="ni" style="background:${n.g}">${n.icon}</span>
+    <span><strong>${n.title}</strong><p>${n.body}</p></span></div>`;
+}
+$('#lockNotes').innerHTML = NOTIFS.slice(0,2).map(noteHTML).join('');
+$('#ncList').innerHTML = NOTIFS.map(noteHTML).join('');
+$$('.note').forEach(makeSwipeable);
 
-        // --- 3. Interactive Terminal Logic ---
-        const termInput = document.getElementById('term-input');
-        const termOutput = document.getElementById('term-output');
+function makeSwipeable(el){
+  let sx=0, down=false, dx=0;
+  el.addEventListener('pointerdown', e=>{ down=true; sx=e.clientX; el.style.transition='none'; });
+  el.addEventListener('pointermove', e=>{ if(!down) return; dx=e.clientX-sx; el.style.transform=`translateX(${dx}px)`; });
+  const end=()=>{ if(!down) return; down=false; el.style.transition='';
+    if(Math.abs(dx)>70){ el.style.transform=`translateX(${dx>0?300:-300}px)`; el.style.opacity=0;
+      setTimeout(()=>el.remove(),320); blip(300,.06); toast('Notification cleared'); }
+    else el.style.transform=''; dx=0; };
+  el.addEventListener('pointerup', end); el.addEventListener('pointerleave', end);
+  el.addEventListener('click', ()=>{ if(Math.abs(dx)<6) openApp(el.dataset.app==='calendar'?'calendar':el.dataset.app==='weather'?'weather':el.dataset.app==='music'?'music':el.dataset.app==='settings'?'settings':'messages'); });
+}
 
-        const commands = {
-            'help': 'Available commands: <br> - <span class="text-neon-cyan">about</span>: Who is Tanish? <br> - <span class="text-neon-cyan">skills</span>: Tech stack & hardware <br> - <span class="text-neon-cyan">projects</span>: View deployments <br> - <span class="text-neon-cyan">clear</span>: Clear terminal window',
-            'about': 'Tanish is a student and developer based in India. He specializes in bridging hardware (microcontrollers, sensors) with software (cloud APIs, backend servers).',
-            'skills': '<span class="text-purple-400">Languages:</span> Python, C++, Node.js, HTML/CSS<br><span class="text-blue-400">Cloud/DevOps:</span> Azure, DigitalOcean, Docker, Git<br><span class="text-green-400">Hardware:</span> ESP32, Arduino, Raspberry Pi, ROS, PCB Design',
-            'projects': 'Executing project overview... Scroll up to the "Featured Deployments" section for visual data.',
-        };
+function setLocked(v){
+  state.locked=v;
+  $('#lockLayer').classList.toggle('hidden', !v);
+  $('#homeLayer').classList.toggle('hidden', v);
+  if(v) closeSheets(), closeApp();
+  blip(v?330:620,.1,'triangle');
+}
+$('#lockLayer').addEventListener('click', e=>{
+  if(e.target.closest('.qbtn') || e.target.closest('.note')) return; setLocked(false);
+});
+$('#flashQ').addEventListener('click', e=>{ e.stopPropagation(); toggleFlash(); e.currentTarget.classList.toggle('on', state.toggles.flash); });
+$('[data-open="camera"]').addEventListener('click', e=>{ e.stopPropagation(); setLocked(false); openApp('camera'); });
 
-        // Keep input focused when clicking terminal window
-        document.querySelector('.terminal-container').addEventListener('click', () => termInput.focus());
+function toggleFlash(){
+  state.toggles.flash=!state.toggles.flash;
+  document.documentElement.style.setProperty('--brightness', state.toggles.flash?'1.35':String(state.brightness+.2));
+  syncCC(); toast('Flashlight '+(state.toggles.flash?'on':'off')); blip(700,.06);
+}
 
-        termInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const inputVal = this.value.trim().toLowerCase();
-                if (inputVal === '') return;
+/* ========================================
+   HOME SCREEN
+   ======================================== */
+function appBtn(a, small){
+  return `<button class="app" data-app="${a.id}" aria-label="${a.name}">
+    <span class="ico" style="background:${a.g}">${a.icon}</span>${small?'':`<span>${a.name}</span>`}</button>`;
+}
+const PAGES = [
+  APPS.slice(0,12).map(a=>appBtn(a)).join(''),
+  `<div class="widget glass"><h4>Weather · Cupertino</h4><div class="wtemp">21°</div>
+     <div style="font-size:11px;opacity:.75">Mostly Clear · H:24° L:16°</div>
+     <div class="hours">${['10','11','12','1','2','3'].map((h,i)=>`<div><span>${h}</span><span>${['☀','☀','⛅','⛅','☁','☁'][i]}</span><span>${21+i%3}°</span></div>`).join('')}</div></div>
+   <div class="widget glass"><h4>Now Playing</h4><div style="display:flex;gap:10px;align-items:center">
+     <span style="width:44px;height:44px;border-radius:12px;background:linear-gradient(140deg,#ff2d55,#ff9500)"></span>
+     <span><strong style="font-size:13px">Glass Horizon</strong><br/><span style="font-size:11px;opacity:.65">Aurora Unit</span></span></div>
+     <div class="prog"><i></i></div></div>
+   <div class="widget glass"><h4>Calendar</h4><strong style="font-size:14px" id="wDate">Today</strong>
+     <div style="font-size:11.5px;opacity:.8;margin-top:8px;line-height:1.8">
+       11:30 Design Review<br/>14:00 Glass sync<br/>18:45 Dinner · Nori</div></div>
+   <div class="widget glass"><h4>Battery</h4><div class="wtemp">100%</div>
+     <div style="font-size:11px;opacity:.75">Titanium efficiency core</div></div>`,
+  APPS.slice(9).map(a=>appBtn(a)).join('')
+];
+$('#pages').innerHTML = PAGES.map(p=>`<div class="page${p.includes('widget')?' widgets':''}">${p}</div>`).join('');
+$('#dots').innerHTML = PAGES.map((_,i)=>`<i class="${i===0?'on':''}"></i>`).join('');
+$('#dock').innerHTML = DOCK.map(id=>appBtn(APPS.find(a=>a.id===id), true)).join('');
 
-                // Echo the command
-                printToTerminal(`<span class="text-green-400">tanish@maker:~$</span> ${inputVal}`);
+function goPage(i){
+  state.page=Math.max(0,Math.min(PAGES.length-1,i));
+  $('#pages').style.transform=`translateX(${-state.page*100}%)`;
+  $$('#dots i').forEach((d,k)=>d.classList.toggle('on', k===state.page));
+  blip(480,.05);
+}
+$('#dots').addEventListener('click', e=>{ const i=$$('#dots i').indexOf(e.target); if(i>=0) goPage(i); });
 
-                // Process command
-                if (inputVal === 'clear') {
-                    termOutput.innerHTML = '';
-                } else if (commands[inputVal]) {
-                    printToTerminal(commands[inputVal]);
-                } else {
-                    printToTerminal(`Command not found: ${inputVal}. Type 'help' for a list of commands.`, 'text-red-400');
-                }
+/* swipe pages */
+let ps=null;
+$('#pages').addEventListener('pointerdown', e=>{ ps={x:e.clientX,y:e.clientY}; });
+$('#homeLayer').addEventListener('pointerup', e=>{
+  if(!ps) return; const dx=e.clientX-ps.x, dy=e.clientY-ps.y; ps=null;
+  if(Math.abs(dx)>46 && Math.abs(dx)>Math.abs(dy)) goPage(state.page + (dx<0?1:-1));
+  else if(dy>60) openSheet('#ncLayer');
+  else if(dy<-60) openSheet('#libLayer');
+});
 
-                // Scroll to bottom and clear input
-                termOutput.scrollTop = termOutput.scrollHeight;
-                this.value = '';
-            }
-        });
+/* long-press jiggle */
+let lpTimer=null;
+document.addEventListener('pointerdown', e=>{
+  const a=e.target.closest('.app'); if(!a) return;
+  lpTimer=setTimeout(()=>{ state.jiggle=true; $$('.app').forEach(x=>x.classList.add('jiggle')); toast('Edit Home Screen'); blip(260,.1); }, 520);
+});
+document.addEventListener('pointerup', ()=>clearTimeout(lpTimer));
+document.addEventListener('pointercancel', ()=>clearTimeout(lpTimer));
 
-        function printToTerminal(html, className = 'text-gray-300') {
-            const div = document.createElement('div');
-            div.className = `mb-2 ${className}`;
-            div.innerHTML = html;
-            termOutput.appendChild(div);
-        }
+/* app clicks */
+document.addEventListener('click', e=>{
+  const a=e.target.closest('.app'); if(!a) return;
+  if(state.jiggle){ state.jiggle=false; $$('.app').forEach(x=>x.classList.remove('jiggle')); return; }
+  openApp(a.dataset.app);
+});
 
-    </script>
+$('#homeBar').addEventListener('click', ()=>{ closeSheets(); openSheet('#ccLayer'); });
+$('#spotOpen').addEventListener('click', ()=>{ openSheet('#spotLayer'); setTimeout(()=>$('#spotInput').focus(),260); });
+
+/* ========================================
+   SHEETS (Control Center / Notifications / Spotlight / Library)
+   ======================================== */
+const SHEETS=['#ccLayer','#ncLayer','#spotLayer','#libLayer'];
+function closeSheets(){ SHEETS.forEach(s=>$(s).classList.add('hidden')); }
+function openSheet(sel){ closeSheets(); if(state.locked) setLocked(false); $(sel).classList.remove('hidden'); blip(560,.06); }
+SHEETS.forEach(s=>$(s).addEventListener('click', e=>{ if(e.target===$(s)) closeSheets(); }));
+
+const CC=[
+  {k:'wifi', label:'Wi-Fi', t:'📶'},{k:'bt', label:'Bluetooth', t:'🔵'},
+  {k:'air', label:'Airplane', t:'✈'},{k:'cell', label:'Cellular', t:'📡'},
+  {k:'focus', label:'Focus', t:'🌙'},{k:'mirror', label:'Mirroring', t:'🖥'},
+  {k:'flash', label:'Flashlight', t:'🔦'},{k:'calc', label:'Calculator', t:'🧮'},
+  {k:'camera', label:'Camera', t:'📷'}
+];
+$('#ccGrid').innerHTML = CC.map(c=>
+  `<button class="tile" data-cc="${c.k}" aria-pressed="false"><b>${c.t}</b><span>${c.label}</span></button>`).join('');
+function syncCC(){
+  $$('#ccGrid .tile').forEach(t=>{
+    const k=t.dataset.cc; if(!(k in state.toggles)) return;
+    t.classList.toggle('on', state.toggles[k]); t.setAttribute('aria-pressed', String(state.toggles[k]));
+  });
+  $('#flashQ').classList.toggle('on', state.toggles.flash);
+}
+$('#ccGrid').addEventListener('click', e=>{
+  const t=e.target.closest('[data-cc]'); if(!t) return;
+  const k=t.dataset.cc;
+  if(k==='calc'){ openApp('calculator'); return; }
+  if(k==='camera'){ openApp('camera'); return; }
+  if(k==='flash'){ toggleFlash(); return; }
+  state.toggles[k]=!state.toggles[k]; syncCC(); blip(620,.05);
+  toast(CC.find(c=>c.k===k).label+' '+(state.toggles[k]?'on':'off'));
+});
+syncCC();
+
+function bindSlider(sel, key, apply){
+  const el=$(sel), fill=$('i', el), val=()=>state[key];
+  const set=v=>{ state[key]=Math.max(.05,Math.min(1,v)); fill.style.height=(state[key]*100)+'%';
+    el.setAttribute('aria-valuenow', Math.round(state[key]*100)); apply(state[key]); };
+  const fromEvt=e=>{ const r=el.getBoundingClientRect(); set(1-(e.clientY-r.top)/r.height); };
+  let down=false;
+  el.addEventListener('pointerdown', e=>{ down=true; fromEvt(e); });
+  window.addEventListener('pointermove', e=>{ if(down) fromEvt(e); });
+  window.addEventListener('pointerup', ()=>down=false);
+  el.addEventListener('keydown', e=>{ if(e.key==='ArrowUp') set(val()+.08); if(e.key==='ArrowDown') set(val()-.08); });
+  set(val());
+}
+bindSlider('#brightSl','brightness', v=>document.documentElement.style.setProperty('--brightness', String(.45+v*.75)));
+bindSlider('#volSl','volume', v=>{ if(v>.9) toast('Volume '+Math.round(v*100)+'%'); });
+
+$('.mp-ctrl').addEventListener('click', e=>{
+  const b=e.target.closest('[data-mp]'); if(!b) return;
+  if(b.dataset.mp==='play'){ state.playing=!state.playing; $('#mpPlay').textContent=state.playing?'⏸':'▶'; toast(state.playing?'Playing':'Paused'); }
+  else toast(b.dataset.mp==='next'?'Next track':'Previous track');
+  blip(740,.05);
+});
+
+/* SPOTLIGHT */
+function renderSpot(q=''){
+  const res=APPS.filter(a=>a.name.toLowerCase().includes(q.toLowerCase()));
+  $('#spotResults').innerHTML = res.length
+    ? res.map(a=>`<button class="result" data-app="${a.id}"><span class="ico" style="background:${a.g}">${a.icon}</span>${a.name}<span style="margin-left:auto;opacity:.5;font-size:11px">${a.cat}</span></button>`).join('')
+    : `<p style="opacity:.6;font-size:12px">No results</p>`;
+}
+renderSpot();
+$('#spotInput').addEventListener('input', e=>renderSpot(e.target.value));
+$('#spotResults').addEventListener('click', e=>{ const b=e.target.closest('[data-app]'); if(b) openApp(b.dataset.app); });
+
+/* APP LIBRARY */
+const CATS=[...new Set(APPS.map(a=>a.cat))];
+$('#libList').innerHTML = CATS.map(c=>`<div class="cat glass"><h4 style="margin:0;font-size:12px;opacity:.7">${c}</h4>
+  <div class="mini">${APPS.filter(a=>a.cat===c).map(a=>`<button class="app" data-app="${a.id}" aria-label="${a.name}"><span class="ico" style="background:${a.g};width:34px;height:34px;border-radius:10px;font-size:15px">${a.icon}</span></button>`).join('')}</div></div>`).join('');
+
+/* ========================================
+   APPLICATIONS
+   ======================================== */
+const VIEWS={
+  messages:()=>`<div class="bubbles">
+    <div class="bub them">Did you see iOS 27?</div><div class="bub me">The glass is refracting properly 😮‍💨</div>
+    <div class="bub them">Send me the build</div><div class="bub me">Pull it down from Control Center</div></div>`,
+  phone:()=>['Maya Chen','Studio 4','Dad','Aurora Unit','Nori Reservations'].map(n=>
+    `<div class="row"><span class="grow">${n}<small>mobile · recent</small></span>📞</div>`).join(''),
+  safari:()=>`<div class="row"><span class="grow">apple.com<small>Favorites</small></span>🧭</div>
+    <div class="row"><span class="grow">liquid.glass/labs<small>Reading list</small></span>📖</div>
+    <div class="row"><span class="grow">ios27.design<small>Shared with you</small></span>🔗</div>`,
+  photos:()=>`<div class="photogrid">${Array.from({length:12},(_,i)=>
+    `<div style="background:linear-gradient(${140+i*17}deg,hsl(${i*29} 80% 62%),hsl(${i*29+50} 75% 42%))"></div>`).join('')}</div>`,
+  camera:()=>`<div style="height:300px;border-radius:20px;background:linear-gradient(170deg,#1a2330,#05070b);position:relative;display:grid;place-items:center">
+    <div style="width:120px;height:120px;border:2px solid rgba(255,255,255,.6);border-radius:14px"></div>
+    <div style="position:absolute;bottom:16px;width:56px;height:56px;border-radius:99px;background:#fff"></div></div>
+    <div style="display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:11px;opacity:.7">PHOTO · PORTRAIT · SPATIAL · VIDEO</div>`,
+  maps:()=>`<div class="map">${Array.from({length:7},(_,i)=>
+    `<i style="left:0;right:0;top:${12+i*13}%;height:2px"></i><i style="top:0;bottom:0;left:${10+i*13}%;width:2px"></i>`).join('')}
+    <span class="pin"></span></div>
+    <div class="row" style="margin-top:12px"><span class="grow">Apple Park<small>12 min · driving</small></span>🚗</div>`,
+  music:()=>`<div class="bigart"></div><h3 style="margin:14px 0 2px">Glass Horizon</h3>
+    <div style="opacity:.6;font-size:12px">Aurora Unit · Refraction</div>
+    <div class="prog"><i></i></div>
+    <div style="display:flex;justify-content:center;gap:26px;font-size:20px;margin-top:10px">⏮ ${state.playing?'⏸':'▶'} ⏭</div>`,
+  weather:()=>`<div style="text-align:center;padding:10px 0"><div style="font-size:64px;font-weight:200">21°</div>
+    <div style="opacity:.7">Mostly Clear · Cupertino</div></div>
+    ${['Now 21°','1PM 22°','2PM 23°','3PM 23°','4PM 22°'].map(h=>`<div class="row"><span class="grow">${h}</span>⛅</div>`).join('')}`,
+  settings:()=>['Liquid Glass Effects','Dynamic Island','Haptic Feedback','Always-On Display','Spatial Audio'].map((n,i)=>
+    `<div class="row"><span class="grow">${n}</span><span class="switch ${i<3?'on':''}" role="switch" tabindex="0" aria-checked="${i<3}"><i></i></span></div>`).join(''),
+  mail:()=>['Maya Chen · Glass review','App Store · Your update is live','Studio 4 · Design sync notes'].map(n=>
+    `<div class="row"><span class="grow">${n}<small>Inbox</small></span>✉️</div>`).join(''),
+  calendar:()=>`<div class="row"><span class="grow">11:30 Design Review<small>Studio 4</small></span>📅</div>
+    <div class="row"><span class="grow">14:00 Glass sync<small>Video call</small></span>📅</div>
+    <div class="row"><span class="grow">18:45 Dinner<small>Nori</small></span>📅</div>`,
+  files:()=>['iOS27-Glass.sketch','Refraction.mov','Notes.md','Wallpapers'].map(n=>
+    `<div class="row"><span class="grow">${n}<small>iCloud Drive</small></span>📁</div>`).join(''),
+  notes:()=>`<div class="row" style="display:block"><strong>Liquid Glass rules</strong>
+    <small>Blur + highlight + reflection. Never flat. Never neon.</small></div>
+    <div class="row" style="display:block"><strong>Ship list</strong><small>Island states · CC tiles · Spotlight</small></div>`,
+  appstore:()=>['Refract','Prism Notes','Aurora Player','Glassboard'].map(n=>
+    `<div class="row"><span class="grow">${n}<small>Editors’ Choice</small></span><button class="iconbtn" style="width:auto;padding:0 12px">GET</button></div>`).join(''),
+  calculator:()=>`<div id="calcOut" style="text-align:right;font-size:36px;font-weight:200;padding:10px 6px">0</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${
+    ['C','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','=','⌫']
+    .map(k=>`<button class="tile" data-calc="${k}" style="min-height:46px;font-size:15px">${k}</button>`).join('')}</div>`,
+  podcasts:()=>['Design Details','The Talk Show','Glass Hour'].map(n=>
+    `<div class="row"><span class="grow">${n}<small>New episode</small></span>🎙️</div>`).join('')
+};
+
+function openApp(id){
+  const a=APPS.find(x=>x.id===id); if(!a) return;
+  if(state.locked) setLocked(false);
+  closeSheets();
+  state.app=id;
+  $('#awTitle').textContent=a.name;
+  $('#awIco').style.background=a.g; $('#awIco').textContent=a.icon;
+  $('#awBody').innerHTML=(VIEWS[id]||(()=>`<p style="opacity:.6">${a.name} is coming in a later beta.</p>`))();
+  $('#appwin').classList.remove('hidden');
+  $('#homeLayer').style.filter='blur(6px)'; $('#homeLayer').style.transform='scale(.96)';
+  blip(820,.08,'triangle');
+}
+function closeApp(){
+  state.app=null; $('#appwin').classList.add('hidden');
+  $('#homeLayer').style.filter=''; $('#homeLayer').style.transform='';
+}
+$('#awClose').addEventListener('click', ()=>{ closeApp(); blip(380,.07); });
+$('#awBar').addEventListener('click', ()=>{ closeApp(); blip(380,.07); });
+
+/* in-app interactions */
+$('#awBody').addEventListener('click', e=>{
+  const sw=e.target.closest('.switch');
+  if(sw){ const on=!sw.classList.contains('on'); sw.classList.toggle('on',on); sw.setAttribute('aria-checked',String(on)); blip(700,.05); return; }
+  const k=e.target.closest('[data-calc]');
+  if(k){ calc(k.dataset.calc); blip(560,.04); }
+});
+let calcBuf='0';
+function calc(k){
+  const out=$('#calcOut'); if(!out) return;
+  const map={'÷':'/','×':'*','−':'-'};
+  if(k==='C') calcBuf='0';
+  else if(k==='⌫') calcBuf=calcBuf.length>1?calcBuf.slice(0,-1):'0';
+  else if(k==='±') calcBuf=calcBuf.startsWith('-')?calcBuf.slice(1):'-'+calcBuf;
+  else if(k==='='){ try{ calcBuf=String(Function('return '+calcBuf.replace(/[÷×−]/g,c=>map[c]))()); }catch{ calcBuf='Error'; } }
+  else calcBuf = calcBuf==='0' && !'+-×÷%.'.includes(k) ? k : calcBuf+k;
+  out.textContent=calcBuf.slice(0,14);
+}
+
+/* ========================================
+   DYNAMIC ISLAND
+   ======================================== */
+const DI=[
+  {t:'Glass Horizon', s:'Aurora Unit'},
+  {t:'Timer', s:'04:12 remaining'},
+  {t:'Maya Chen', s:'Incoming call…'},
+  {t:'Navigation', s:'400 m · turn right'},
+  {t:'AirDrop', s:'Receiving Wallpaper.heic'}
+];
+let diI=0, diTaps=0, diTapT=null;
+$('#island').addEventListener('click', ()=>{
+  const el=$('#island');
+  if(!el.classList.contains('on')) el.classList.add('on');
+  else { diI=(diI+1)%DI.length; }
+  $('#diTitle').textContent=DI[diI].t; $('#diSub').textContent=DI[diI].s;
+  blip(900,.06,'triangle');
+  clearTimeout(diTapT); diTaps++; diTapT=setTimeout(()=>diTaps=0,600);
+  if(diTaps>=3){ document.body.style.filter='hue-rotate(80deg)';
+    setTimeout(()=>document.body.style.filter='',1400); toast('✦ Hidden Liquid mode'); }
+});
+$('#island').addEventListener('dblclick', ()=>$('#island').classList.remove('on'));
+
+/* ========================================
+   KEYBOARD + EASTER EGGS
+   ======================================== */
+window.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ if(state.app) closeApp(); else if(SHEETS.some(s=>!$(s).classList.contains('hidden'))) closeSheets(); else setLocked(true); }
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT'){ e.preventDefault(); openSheet('#spotLayer'); $('#spotInput').focus(); }
+  if(!state.locked && document.activeElement.tagName!=='INPUT'){
+    if(e.key==='ArrowRight') goPage(state.page+1);
+    if(e.key==='ArrowLeft') goPage(state.page-1);
+    if(e.key==='ArrowDown') openSheet('#ncLayer');
+    if(e.key==='ArrowUp') openSheet('#ccLayer');
+  }
+  if(e.key==='Enter' && state.locked && document.activeElement===phone) setLocked(false);
+});
+$('#verEgg').addEventListener('click', ()=>{
+  toast('✦ Built with light'); $('#wall').dataset.w='fluid';
+  document.documentElement.style.setProperty('--glass-highlight','rgba(160,220,255,.8)');
+  setTimeout(()=>document.documentElement.style.setProperty('--glass-highlight','rgba(255,255,255,.5)'),2500);
+});
+
+/* ========================================
+   3D SCENE
+   ======================================== */
+function init3D(){
+  if(REDUCED || !window.THREE) return;
+  const canvas=$('#bg3d');
+  const renderer=new THREE.WebGLRenderer({canvas, alpha:true, antialias:!MOBILE});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE?1.2:1.8));
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x05060a, .055);
+  const camera=new THREE.PerspectiveCamera(55, 1, .1, 120);
+  camera.position.set(0,0,18);
+
+  scene.add(new THREE.AmbientLight(0x9fd6ff, .8));
+  const d1=new THREE.DirectionalLight(0xffffff,1.1); d1.position.set(6,9,8); scene.add(d1);
+  const d2=new THREE.DirectionalLight(0xa78bfa,.9); d2.position.set(-8,-4,4); scene.add(d2);
+
+  const group=new THREE.Group(); scene.add(group);
+  const geos=[new THREE.IcosahedronGeometry(1,1), new THREE.SphereGeometry(1,24,18), new THREE.TorusGeometry(.9,.32,16,40)];
+  const count=MOBILE?9:18;
+  for(let i=0;i<count;i++){
+    const m=new THREE.MeshPhysicalMaterial({
+      color:new THREE.Color().setHSL(.54+Math.random()*.2,.7,.62),
+      roughness:.12, metalness:.05, transparent:true, opacity:.42,
+      transmission:.7, clearcoat:1, clearcoatRoughness:.2
+    });
+    const mesh=new THREE.Mesh(geos[i%geos.length], m);
+    const s=.7+Math.random()*1.9; mesh.scale.setScalar(s);
+    mesh.position.set((Math.random()-.5)*26,(Math.random()-.5)*18,-4-Math.random()*22);
+    mesh.userData={sp:.06+Math.random()*.16, ph:Math.random()*6.28};
+    group.add(mesh);
+  }
+  const pc=MOBILE?450:1400, pos=new Float32Array(pc*3);
+  for(let i=0;i<pc*3;i++) pos[i]=(Math.random()-.5)*60;
+  const pg=new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const particles=new THREE.Points(pg, new THREE.PointsMaterial({color:0xbfe4ff,size:.07,transparent:true,opacity:.5}));
+  scene.add(particles);
+
+  function resize(){
+    const w=window.innerWidth, h=window.innerHeight;
+    renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  let t=0;
+  (function loop(){
+    t+=.006;
+    group.children.forEach((m,i)=>{
+      m.rotation.x=t*m.userData.sp*2; m.rotation.y=t*m.userData.sp*3;
+      m.position.y+=Math.sin(t+m.userData.ph)*.004;
+    });
+    particles.rotation.y=t*.05;
+    group.rotation.y = tilt.y*.006 + t*.02;
+    group.rotation.x = tilt.x*.005;
+    camera.position.y = -window.scrollY*.0016;
+    renderer.render(scene,camera);
+    requestAnimationFrame(loop);
+  })();
+}
+
+/* ========================================
+   LOADING EXPERIENCE
+   ======================================== */
+(function load(){
+  const bar=$('.loadbar i'); let p=0;
+  const iv=setInterval(()=>{
+    p=Math.min(100,p+8+Math.random()*14); bar.style.width=p+'%';
+    if(p>=100){ clearInterval(iv);
+      setTimeout(()=>{ $('#loader').classList.add('done'); init3D();
+        $$('.reveal').forEach(el=>{ if(el.getBoundingClientRect().top<window.innerHeight) el.classList.add('in'); });
+        toast('Tap the phone to unlock'); }, 320);
+    }
+  }, 130);
+})();
+</script>
 </body>
 </html>
